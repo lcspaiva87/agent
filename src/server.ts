@@ -1,24 +1,26 @@
-import { fastify } from "fastify";
-import { fastifyCors } from "@fastify/cors";
-
+import { fastifyCors } from '@fastify/cors'
+import { fastify } from 'fastify'
 import {
   serializerCompiler,
   validatorCompiler,
-  type ZodTypeProvider
-} from "fastify-type-provider-zod";
+  type ZodTypeProvider,
+} from 'fastify-type-provider-zod'
+import { env } from './env.ts'
+import { getRoomsRoute } from './http/routes/get-rooms.ts'
 
-const env = process.env;
-
-const server = fastify();
-
-const app = fastify().withTypeProvider<ZodTypeProvider>();
-
-server.get("/", (req, res) => {
-    return "Hello World";
-});
+const app = fastify().withTypeProvider<ZodTypeProvider>()
 
 app.register(fastifyCors, {
-    origin: env.BASE_URL || "http://localhost:3000",
-});
+  origin: 'http://localhost:5173',
+})
 
-server.listen({ port: Number(env.PORT) || 3333 })
+app.setSerializerCompiler(serializerCompiler)
+app.setValidatorCompiler(validatorCompiler)
+
+app.get('/health', () => {
+  return 'OK'
+})
+
+app.register(getRoomsRoute)
+
+app.listen({ port: env.PORT })
